@@ -18,22 +18,22 @@ db_config = {
     "database": "piproject"
 }
 
-def insert_data(temp_c, temp_f, humidity):
+def insert_data(temp_c, humidity):
     """Fügt Messwerte in die Datenbank ein"""
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
-        sql = "INSERT INTO measurements (temperature_c, temperature_f, humidity) VALUES (%s, %s, %s)"
-        cursor.execute(sql, (temp_c, temp_f, humidity))
+        sql = "INSERT INTO measurements (temperature, humidity) VALUES (%s, %s)"
+        cursor.execute(sql, (temp_c, humidity))
         conn.commit()
-        print(f"Eingefügt: {temp_c}°C, {temp_f}°F, {humidity}% Luftfeuchte")
+        print(f"Eingefügt: {temp_c}°C, {humidity}% Luftfeuchte")
     except mysql.connector.Error as err:
         print(f"Datenbankfehler: {err}")
     finally:
         cursor.close()
         conn.close()
 
-insert_data(55, 56, 3)
+insert_data(56, 3)
 
 while True:
     try:
