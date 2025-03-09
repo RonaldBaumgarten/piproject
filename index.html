@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperaturanzeige</title>
+    <script>
+        function updateData() {
+            fetch('data.txt?' + new Date().getTime()) // Cache umgehen
+                .then(response => response.text())
+                .then(data => {
+                    let values = data.split(",");
+                    document.getElementById("temperature").innerText = values[0] + " °C";
+                    document.getElementById("humidity").innerText = values[1] + " %";
+                    document.getElementById("pressure").innerText = values[2] + " hPa";
+                })
+                .catch(error => console.error("Fehler beim Laden der Daten: ", error));
+        }
+        setInterval(updateData, 2000);
+        window.onload = updateData;
+    </script>
+</head>
+<body>
+    <h1>Temperatur-Monitor</h1>
+    <p>Temperatur: <span id="temperature">Laden...</span></p>
+    <p>Luftfeuchtigkeit: <span id="humidity">Laden...</span></p>
+    <p>Luftdruck: <span id="pressure">Laden...</span></p>
+</body>
+</html>
