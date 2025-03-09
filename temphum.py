@@ -1,10 +1,13 @@
+# Erweitert nach Codevorlage von https://sensorkit.joy-it.net/de/sensors/ky-015
+
 import time
 import mysql.connector
 import board
 import adafruit_dht
+from datetime import datetime
 
-# Initialisieren Sie das dht-Gerät, wobei der Datenpin mit Pin 16 (GPIO 23) des Raspberry Pi verbunden ist:
-#dhtDevice = adafruit_dht.DHT11(board.D23)
+# Initialisieren des dht-Gerätes, wobei der Datenpin mit Pin 16 (GPIO 23) des Raspberry Pi verbunden ist:
+dhtDevice = adafruit_dht.DHT11(board.D23)
 
 # Sie können DHT22 use_pulseio=False übergeben, wenn Sie pulseio nicht verwenden möchten.
 # Dies kann auf einem Linux-Einplatinencomputer wie dem Raspberry Pi notwendig sein,
@@ -12,18 +15,18 @@ import adafruit_dht
 # dhtDevice = adafruit_dht.DHT22(board.D18, use_pulseio=False)
 
 db_config = {
-    "host": "localhost",  # Oder "localhost", falls lokal
+    "host": "localhost",
     "user": "piproject",
     "password": "123456",
     "database": "piproject"
 }
 
 def insert_data(temp_c, humidity):
-    """Fügt Messwerte in die Datenbank ein"""
+    """Fügt Temperatur in Celsius und Luftfeuchtigkeit in die Datenbank ein"""
     try:
         conn = mysql.connector.connect(**db_config)
         cursor = conn.cursor()
-        sql = "INSERT INTO measurements (temperature, humidity) VALUES (%s, %s)"
+        sql = "INSERT INTO measurements (time, temperature, humidity) VALUES (now(),%s, %s)"
         cursor.execute(sql, (temp_c, humidity))
         conn.commit()
         print(f"Eingefügt: {temp_c}°C, {humidity}% Luftfeuchte")
@@ -33,18 +36,13 @@ def insert_data(temp_c, humidity):
         cursor.close()
         conn.close()
 
-insert_data(56, 3)
-
 while True:
     try:
-        # Drucken der Werte über die serielle Schnittstelle
-        #temperature_c = dhtDevice.temperature
-        #temperature_f = temperature_c * (9 / 5) + 32
-        #humidity = dhtDevice.humidity
-        temperature_c = 24
+        temperature_c = dhtDevice.temperature
         temperature_f = temperature_c * (9 / 5) + 32
-        humidity = 86
+        humidity = dhtDevice.humidity
         print("Temp: {:.1f} F / {:.1f} C    Humidity: {}% ".format(temperature_f, temperature_c, humidity))
+        insert_data(temperature_c, humidity)
 
     except RuntimeError as error:
         # Fehler passieren ziemlich oft, DHT's sind schwer zu lesen, einfach weitermachen
